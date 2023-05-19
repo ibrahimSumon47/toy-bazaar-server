@@ -25,7 +25,16 @@ async function run() {
     await client.connect();
 
     const allToysCollection = client.db("toyBazaar").collection("allToys");
+    const forReactTabs = client.db("toyBazaar").collection("reactTabs")
 
+    // For React Tabs
+
+    app.get("/reactTabs", async(req, res) => {
+      const reactTabs = await forReactTabs.find().toArray();
+      res.send(reactTabs)
+    })
+
+    // All Toys
     app.get("/allToys", async(req, res) => {
       console.log(req.query.email);
       let query = {}
