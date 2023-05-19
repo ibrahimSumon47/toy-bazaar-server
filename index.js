@@ -26,12 +26,25 @@ async function run() {
 
     const allToysCollection = client.db("toyBazaar").collection("allToys");
 
+    app.get("/allToys", async(req, res) => {
+      console.log(req.query.email);
+      let query = {}
+      if(req.query?.email){
+        query = {email: req.query.email}
+      }
+      const limit = parseInt(req.query.limit) || 20;
+      const toys = await allToysCollection.find(query).limit(limit).toArray();
+      res.send(toys)
+    })
+
+
     app.post("/allToys", async (req, res) => {
       const toys = req.body;
       console.log(toys);
       const toysArray = await allToysCollection.insertOne(toys);
       res.send(toysArray);
     });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
