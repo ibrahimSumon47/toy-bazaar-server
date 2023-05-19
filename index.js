@@ -24,12 +24,12 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const toyBrandCollection = client.db("toyBazaar").collection("toyGallery");
+    
 
-    app.get("/toyGallery", async (req, res) => {
-      const toys = toyBrandCollection.find({});
-      const toysArray = await toys.toArray();
-      res.send(toysArray);
+    app.get("/shopByCategory", async (req, res) => {
+      const category = toyShopByCategory.find({});
+      const categoryArray = await category.toArray();
+      res.send(categoryArray);
     });
 
     // Send a ping to confirm a successful connection
