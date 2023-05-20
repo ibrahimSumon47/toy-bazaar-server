@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const allToysCollection = client.db("toyBazaar").collection("allToys");
+    const myAddedToys = client.db("toyBazaar").collection("myToys");
     const forReactTabs = client.db("toyBazaar").collection("reactTabs");
 
     // For React Tabs
@@ -35,8 +36,8 @@ async function run() {
     });
 
     app.get("/reactTabs/:id", async (req, res) => {
-      const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await forReactTabs.findOne(query);
       res.send(result);
     });
@@ -53,6 +54,18 @@ async function run() {
       res.send(toys);
     });
 
+    // My Toys
+    app.get("/myToys", async (req, res) => {
+      console.log(req.query.email);
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      const limit = parseInt(req.query.limit) || 20;
+      const myToys = await myAddedToys.find(query).limit(limit).toArray();
+      res.send(myToys);
+    });
+
     app.get("/allToys/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -60,24 +73,35 @@ async function run() {
       res.send(toys);
     });
 
-    // app.put("/allToys/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updatedToy = req.body;
-    //   console.log(updatedToy);
-    //   const updateToy = {
-    //     $set: {
-    //       status: updatedToy.status,
-    //     },
-    //   };
-    //   const result = await allToysCollection.updateOne(filter, updateToy);
-    //   res.send(result);
-    // });
+    // Add A Toy to all data
+    app.post("/allToys", async (req, res) => {
+      const allToys = req.body;
+      const result = await allToysCollection.insertOne(allToys);
+      res.send(result);
+    });
 
-    app.delete("/allToys/:id", async (req, res) => {
+    // My Toys
+    app.post("/myToys", async (req, res) => {
+      const myToys = req.body;
+      const result = await myAddedToys.insertOne(myToys);
+      res.send(result);
+    });
+
+    app.put("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedToy = req.body;
+      console.log(updatedToy);
+      const updateToy = {};
+      const result = await allToysCollection.updateOne(filter, updateToy);
+      res.send(result);
+    });
+
+    // Delete from my toys
+    app.delete("/myToys/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const toys = await allToysCollection.deleteOne(query);
+      const toys = await myAddedToys.deleteOne(query);
       res.send(toys);
     });
 
