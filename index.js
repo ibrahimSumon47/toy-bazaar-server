@@ -34,6 +34,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/reactTabs/:id", async (req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await forReactTabs.findOne(query);
+      res.send(result);
+    });
+
     // All Toys
     app.get("/allToys", async (req, res) => {
       console.log(req.query.email);
@@ -46,12 +53,26 @@ async function run() {
       res.send(toys);
     });
 
-    app.post("/allToys", async (req, res) => {
-      const toys = req.body;
-      console.log(toys);
-      const toysArray = await allToysCollection.insertOne(toys);
-      res.send(toysArray);
+    app.get("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const toys = await allToysCollection.find(query).toArray();
+      res.send(toys);
     });
+
+    // app.put("/allToys/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updatedToy = req.body;
+    //   console.log(updatedToy);
+    //   const updateToy = {
+    //     $set: {
+    //       status: updatedToy.status,
+    //     },
+    //   };
+    //   const result = await allToysCollection.updateOne(filter, updateToy);
+    //   res.send(result);
+    // });
 
     app.delete("/allToys/:id", async (req, res) => {
       const id = req.params.id;
