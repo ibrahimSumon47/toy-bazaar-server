@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,27 +25,26 @@ async function run() {
     await client.connect();
 
     const allToysCollection = client.db("toyBazaar").collection("allToys");
-    const forReactTabs = client.db("toyBazaar").collection("reactTabs")
+    const forReactTabs = client.db("toyBazaar").collection("reactTabs");
 
     // For React Tabs
-
-    app.get("/reactTabs", async(req, res) => {
-      const reactTabs = await forReactTabs.find().toArray();
-      res.send(reactTabs)
-    })
+    app.get("/reactTabs", async (req, res) => {
+      const reactTabs = forReactTabs.find();
+      const result = await reactTabs.toArray();
+      res.send(result);
+    });
 
     // All Toys
-    app.get("/allToys", async(req, res) => {
+    app.get("/allToys", async (req, res) => {
       console.log(req.query.email);
-      let query = {}
-      if(req.query?.email){
-        query = {email: req.query.email}
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
       }
       const limit = parseInt(req.query.limit) || 20;
       const toys = await allToysCollection.find(query).limit(limit).toArray();
-      res.send(toys)
-    })
-
+      res.send(toys);
+    });
 
     app.post("/allToys", async (req, res) => {
       const toys = req.body;
@@ -54,6 +53,12 @@ async function run() {
       res.send(toysArray);
     });
 
+    app.delete("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const toys = await allToysCollection.deleteOne(query);
+      res.send(toys);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
