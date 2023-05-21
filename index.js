@@ -25,7 +25,7 @@ async function run() {
     await client.connect();
 
     const allToysCollection = client.db("toyBazaar").collection("allToys");
-    const myAddedToys = client.db("toyBazaar").collection("myToys");
+    // const myAddedToys = client.db("toyBazaar").collection("myToys");
     const forReactTabs = client.db("toyBazaar").collection("reactTabs");
 
     // For React Tabs
@@ -49,30 +49,6 @@ async function run() {
       res.send(toys);
     });
 
-    // My Toys
-    // app.get("/myToys", async (req, res) => {
-    //   console.log(req.query.email);
-    //   let query = {};
-    //   if (req.query?.email) {
-    //     query = { email: req.query.email };
-    //   }
-    //   const myToys = await myAddedToys.find(query).toArray();
-    //   res.send(myToys);
-    // });
-
-    app.get("/myToys", async (req, res) => {
-      const userEmail = req.query.email;
-
-      try {
-        const query = { email: userEmail };
-        const myToys = await myAddedToys.find(query).toArray();
-        res.send(myToys);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-
     app.get("/allToys/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -87,27 +63,18 @@ async function run() {
       res.send(result);
     });
 
-    // Add A Toy to My Toys
-    app.post("/myToys", async (req, res) => {
-      const myToys = req.body;
-      const result = await myAddedToys.insertOne(myToys);
-      res.send(result);
-    });
-
     app.put("/allToys/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updatedToy = req.body;
       const updateToy = {
-        // Price, available quantity, Detail description
         $set: {
           price: updatedToy.price,
           quantity: updatedToy.quantity,
           details: updatedToy.details,
         },
       };
-      console.log(updateToy);
       const result = await allToysCollection.updateOne(
         filter,
         updateToy,
@@ -116,13 +83,26 @@ async function run() {
       res.send(result);
     });
 
-    //!  Delete from my toys
-    // ! app.delete("/myToys/:id", async (req, res) => {
-    //!!   const id = req.params.id;
-    //!   const query = { _id: new ObjectId(id) };
-    //!  const toys = await myAddedToys.deleteOne(query);
-    //!   res.send(toys);
-    //! });
+    // search
+    app.get("/allToysSearch/:text", async (req, res) => {
+      const text = req.params.text;
+      const result = await allToysCollection
+        .find({
+          $or: [
+            { toyName: { $regex: text, $options: "i" } },
+            { category: { $regex: text, $options: "i" } },
+          ],
+        })
+        .toArray();
+      res.send(result);
+    });
+
+    // email
+    app.get("/allToysEmail/:email", async (req, res) => {
+      console.log(req.params.email);
+      const result = await allToysCollection.find({email: req.params.email}).toArray()
+      res.send(result)
+    })
 
     // Delete everywhere
     app.delete("/allToys/:id", async (req, res) => {
