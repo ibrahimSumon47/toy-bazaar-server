@@ -56,6 +56,25 @@ async function run() {
       res.send(toys);
     });
 
+    // Sort
+
+    app.get("/sortToys", async (req, res) => {
+      let query = {};
+      if (req.query?.toyName) {
+        query = { email: req.query.toyName };
+      }
+      const sort = req.query?.sort === "asc" ? 1 : -1;
+      const sortToy = "price";
+    
+      const result = await allToysCollection
+        .find(query)
+        .limit(20)
+        .sort({ [sortToy]: sort })
+        .toArray();
+      res.send(result);
+    });
+    
+
     // Add A Toy to all data
     app.post("/allToys", async (req, res) => {
       const allToys = req.body;
@@ -102,9 +121,11 @@ async function run() {
     // email
     app.get("/allToysEmail/:email", async (req, res) => {
       console.log(req.params.email);
-      const result = await allToysCollection.find({email: req.params.email}).toArray()
-      res.send(result)
-    })
+      const result = await allToysCollection
+        .find({ email: req.params.email })
+        .toArray();
+      res.send(result);
+    });
 
     // Delete everywhere
     app.delete("/allToys/:id", async (req, res) => {
