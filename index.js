@@ -27,6 +27,7 @@ async function run() {
     const allToysCollection = client.db("toyBazaar").collection("allToys");
     // const myAddedToys = client.db("toyBazaar").collection("myToys");
     const forReactTabs = client.db("toyBazaar").collection("reactTabs");
+    const reviewCollection = client.db("toyBazaar").collection("reviews");
 
     // For React Tabs
     app.get("/reactTabs", async (req, res) => {
@@ -72,6 +73,12 @@ async function run() {
         .sort({ [sortToy]: sort })
         .toArray();
       res.send(result);
+    });
+
+    // Reviews
+    app.get("/reviews", async (req, res) => {
+      const review = await reviewCollection.find().toArray();
+      res.send(review);
     });
     
 
