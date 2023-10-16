@@ -2,11 +2,51 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const nodemailer = require("nodemailer");
+const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 5000;
-
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
+
+
+
+app.post("/subscribe-email", (req, res) => {
+  const { email } = req.body;
+
+  // Configure your email transporter
+  const transporter = nodemailer.createTransport({
+    service: "Gmail", // e.g., 'Gmail'
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+    tls:{
+      rejectUnauthorized: false
+    }
+  });
+
+  // Email data
+  const mailOptions = {
+    from: 'ToyBazaar',
+    to: email,
+    subject: 'Thank You for Subscribing',
+    text: 'Thank you for subscribing to our newsletter!',
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Email sending failed:", error);
+      res.status(500).json({ message: "Failed to send thank you email" });
+    } else {
+      console.log("Email sent:", info.response);
+      res.json({ message: "Subscription successful" });
+    }
+  });
+});
+
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.92d2eha.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -66,7 +106,7 @@ async function run() {
       }
       const sort = req.query?.sort === "asc" ? 1 : -1;
       const sortToy = "price";
-    
+
       const result = await allToysCollection
         .find(query)
         .limit(20)
@@ -80,7 +120,6 @@ async function run() {
       const review = await reviewCollection.find().toArray();
       res.send(review);
     });
-    
 
     // Add A Toy to all data
     app.post("/allToys", async (req, res) => {
